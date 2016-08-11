@@ -23,4 +23,7 @@
 #ifndef GLICKO_H
 #define GLICKO_H
 
+#include "player.h"
+
+
 #endif // GLICKO_H

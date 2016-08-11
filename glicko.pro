@@ -2,8 +2,10 @@ TEMPLATE = app
 TARGET = glicko
 INCLUDEPATH += .
 
-HEADERS += glicko.h
+CONFIG += c++14
 
-SOURCES += glicko.cpp \
-           main.cpp
+HEADERS +=  glicko.h \
+            player.h
 
+SOURCES +=  glicko.cpp \
+            main.cpp
