@@ -20,10 +20,33 @@
 *   http://www.fsf.org/about/contact.html                                 *
 ***************************************************************************/
 
-#ifndef GLICKO_H
-#define GLICKO_H
+#ifndef GLICKO_GLICKO_H
+#define GLICKO_GLICKO_H
 
 #include "player.h"
+#include <QMap>
 
+namespace glicko
+{
 
-#endif // GLICKO_H
+/**
+ * @todo comment.
+ */
+template <typename IDTYPE> class Glicko
+{
+public:
+    /**
+     * @brief Destructor.
+     */
+    ~Glicko()
+    {
+        qDeleteAll(m_Players);
+    }
+protected:
+private:
+    QMap<IDTYPE, Player *>  m_Players;  ///< The players.
+};
+
+} // namespace glicko
+
+#endif // GLICKO_GLICKO_H

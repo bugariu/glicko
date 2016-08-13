@@ -20,8 +20,11 @@
 *   http://www.fsf.org/about/contact.html                                 *
 ***************************************************************************/
 
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef GLICKO_PLAYER_H
+#define GLICKO_PLAYER_H
+
+namespace glicko
+{
 
 /**
  * @brief Class describing one player.
@@ -105,4 +108,6 @@ private:
     double      m_Volatility;   ///< Player's rating volatility.
 };
 
-#endif // PLAYER_H
+} // namespace glicko
+
+#endif // GLICKO_PLAYER_H
