@@ -4,7 +4,8 @@ INCLUDEPATH += .
 
 CONFIG += c++14
 
-HEADERS +=  glicko.h \
+HEADERS +=  exceptions.h \
+            glicko.h \
             player.h
 
 SOURCES +=  glicko.cpp \

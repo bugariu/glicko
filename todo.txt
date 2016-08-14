@@ -3,10 +3,11 @@ V 0.1.0
 * Player class
 * Glicko class skeleton
 * namespaces
-- doxygen file
-- exceptions
+* add doxygen file
+* exceptions
 - add player
 - remove player
 - add games
 - compute ratings
 - directory structure
+- finish doxygen file
