@@ -30,6 +30,8 @@ namespace glicko
  * @brief Class describing one player.
  *
  * It has a rating, a rating deviation and a rating volatility.
+ * As a "current" value and a "new" value. The "new" value will be
+ * taken when AdoptNewValue is called.
  */
 class Player
 {
@@ -44,7 +46,10 @@ public:
     Player(double initialRating, double initialDeviation, double initialVolatility):
         m_Rating{initialRating},
         m_Deviation{initialDeviation},
-        m_Volatility{initialVolatility}
+        m_Volatility{initialVolatility},
+        m_NewRating{initialRating},
+        m_NewDeviation{initialDeviation},
+        m_NewVolatility{initialVolatility}
     {
     }
     /**
@@ -57,15 +62,6 @@ public:
         return m_Rating;
     }
     /**
-     * @brief Set rating.
-     *
-     * @param[in]   rating      New rating.
-     */
-    void SetRating(double rating)
-    {
-        m_Rating = rating;
-    }
-    /**
      * @brief Get deviation.
      *
      * @return  Current deviation.
@@ -73,15 +69,6 @@ public:
     double GetDeviation() const
     {
         return m_Deviation;
-    }
-    /**
-     * @brief Set deviation.
-     *
-     * @param[in]   deviation       New deviation.
-     */
-    void SetDeviation(double deviation)
-    {
-        m_Deviation = deviation;
     }
     /**
      * @brief Get volatility.
@@ -93,19 +80,50 @@ public:
         return m_Volatility;
     }
     /**
+     * @brief Set new rating.
+     *
+     * Rating will be adopted when AdoptNewValue is called.
+     * @param[in]   rating      New rating.
+     */
+    void SetNewRating(double rating)
+    {
+        m_NewRating = rating;
+    }
+    /**
+     * @brief Set deviation.
+     *
+     * Rating will be adopted when AdoptNewValue is called.
+     * @param[in]   deviation       New deviation.
+     */
+    void SetNewDeviation(double deviation)
+    {
+        m_NewDeviation = deviation;
+    }
+    /**
      * @brief Set volatility.
      *
+     * Rating will be adopted when AdoptNewValue is called.
      * @param[in]   volatility      New volatility.
      */
-    void SetVolatility(double volatility)
+    void SetNewVolatility(double volatility)
     {
-        m_Volatility = volatility;
+        m_NewVolatility = volatility;
     }
+    void AdoptNewValue()
+    {
+        m_Rating = m_NewRating;
+        m_Deviation = m_NewDeviation;
+        m_Volatility = m_NewVolatility;
+    }
+
 protected:
 private:
-    double      m_Rating;       ///< Player's rating.
-    double      m_Deviation;    ///< Player's rating deviation.
-    double      m_Volatility;   ///< Player's rating volatility.
+    double      m_Rating{0};            ///< Player's current rating.
+    double      m_Deviation{0};         ///< Player's current rating deviation.
+    double      m_Volatility{0};        ///< Player's current rating volatility.
+    double      m_NewRating{0};         ///< Player's new rating.
+    double      m_NewDeviation{0};      ///< Player's new rating deviation.
+    double      m_NewVolatility{0};     ///< Player's new rating volatility.
 };
 
 } // namespace glicko

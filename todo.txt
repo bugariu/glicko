@@ -5,7 +5,7 @@ V 0.1.0
 * namespaces
 * add doxygen file
 * exceptions
-- add player
+o add player
 - remove player
 - add games
 - compute ratings
