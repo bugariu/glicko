@@ -24,6 +24,7 @@
 #define GLICKO_GLICKO_H
 
 #include "player.h"
+#include "exceptions.h"
 #include <QMap>
 
 namespace glicko
@@ -36,15 +37,47 @@ template <typename IDTYPE> class Glicko
 {
 public:
     /**
+     * @brief Constructor.
+     *
+     * @param[in]   initialRating       Initial rating.
+     * @param[in]   initialDeviation    Initial rating deviation.
+     * @param[in]   initialVolatility   Initial rating volatility.
+     */
+    Glicko(double initialRating, double initialDeviation, double initialVolatility):
+        m_DefaultRating{initialRating},
+        m_DefaultDeviation{initialDeviation},
+        m_DefaultVolatility{initialVolatility}
+    {
+    }
+    /**
      * @brief Destructor.
      */
     ~Glicko()
     {
         qDeleteAll(m_Players);
     }
+    /**
+     * @brief Create a new player.
+     *
+     * PLayer will be created with the default values for rating, deviation and volatility.
+     * @param[in]   playerID    ID of the player.
+     */
+    void CreatePlayer(const IDTYPE &playerID)
+    {
+        // check if player with this ID already exists
+        if(m_Players.contains(playerID))
+        {
+            GLTHROW("Player with this ID already exists.");
+        }
+        // create player
+        m_Players[playerID] = new Player{m_DefaultRating, m_DefaultDeviation, m_DefaultVolatility};
+    }
 protected:
 private:
-    QMap<IDTYPE, Player *>  m_Players;  ///< The players.
+    QMap<IDTYPE, Player *>  m_Players;              ///< The players.
+    double                  m_DefaultRating{0};     ///< Default rating when creating a new player.
+    double                  m_DefaultDeviation{0};  ///< Default rating deviation when creating a new player
+    double                  m_DefaultVolatility{0}; ///< Default rating volatility when creating a new player
 };
 
 } // namespace glicko

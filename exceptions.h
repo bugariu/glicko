@@ -64,7 +64,7 @@ public:
      *
      * @return Line number.
      */
-    QString GetLine() const
+    int GetLine() const
     {
         return m_Line;
     }
@@ -75,6 +75,6 @@ private:
 
 } // namespace glicko
 
-#define GLTHROW (#msg) throw glicko::GlickoException{msg, __FILE__, __LINE__};
+#define GLTHROW(msg) throw glicko::GlickoException{msg, __FILE__, __LINE__};
 
 #endif // GLICKO_EXCEPTIONS_H
