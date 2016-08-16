@@ -119,8 +119,6 @@ public:
         m_Deviation = m_NewDeviation;
         m_Volatility = m_NewVolatility;
     }
-
-protected:
 private:
     double      m_Rating{0};            ///< Player's current rating.
     double      m_Deviation{0};         ///< Player's current rating deviation.

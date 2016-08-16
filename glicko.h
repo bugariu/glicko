@@ -35,7 +35,9 @@ namespace glicko
 
 namespace
 {
-constexpr double PI = 3.141592653589793238462643383279502884;
+constexpr double PI = 3.141592653589793238462643383279502884;   ///< @todo comment
+constexpr double GLICO_CONSTANT = 173.7178;                     ///< @todo comment
+constexpr double INITIAL_RATING = 1500;                         ///< @todo comment
 }
 
 /**
@@ -48,6 +50,9 @@ template <typename IDTYPE> class Glicko
     GL_DISABLE_COPY_AND_MOVE(Glicko);
 
 private:
+    /**
+     * @todo comment
+     */
     struct helper
     {
         double  mu;
@@ -98,7 +103,7 @@ public:
             GLTHROW("Player with this ID already exists.");
         }
         // create player
-        m_Players[playerID] = new Player{(m_DefaultRating-155)/173.7178, m_DefaultDeviation/173.7178, m_DefaultVolatility};
+        m_Players[playerID] = new Player{(m_DefaultRating-INITIAL_RATING)/GLICO_CONSTANT, m_DefaultDeviation/GLICO_CONSTANT, m_DefaultVolatility};
     }
     /**
      * @brief Create a new player.
@@ -118,7 +123,7 @@ public:
             GLTHROW("Player with this ID already exists.");
         }
         // create player
-        m_Players[playerID] = new Player{(initialRating-1500)/173.7178, initialDeviation/173.7178, initialVolatility};
+        m_Players[playerID] = new Player{(initialRating-INITIAL_RATING)/GLICO_CONSTANT, initialDeviation/GLICO_CONSTANT, initialVolatility};
     }
     /**
      * @brief remove a player.
@@ -138,7 +143,9 @@ public:
         delete *it;
         m_Players.remove(playerID);
     }
-
+    /**
+     * @todo comment
+     */
     double GetRating(const IDTYPE &playerID)
     {
         auto it = m_Players.find(playerID);
@@ -147,8 +154,11 @@ public:
         {
             GLTHROW("Player with this ID does not exist.");
         }
-        return 173.7178*(*it)->GetRating() + 1500;
+        return GLICO_CONSTANT*(*it)->GetRating() + INITIAL_RATING;
     }
+    /**
+     * @todo comment
+     */
     double GetDeviation(const IDTYPE &playerID)
     {
         auto it = m_Players.find(playerID);
@@ -157,8 +167,11 @@ public:
         {
             GLTHROW("Player with this ID does not exist.");
         }
-        return 173.7178*(*it)->GetDeviation();
+        return GLICO_CONSTANT*(*it)->GetDeviation();
     }
+    /**
+     * @todo comment
+     */
     double GetVolatility(const IDTYPE &playerID)
     {
         auto it = m_Players.find(playerID);
@@ -169,9 +182,8 @@ public:
         }
         return (*it)->GetVolatility();
     }
-
     /**
-     * @brief Add a game
+     * @brief Add a game.
      *
      * @param[in]   playerID1   ID of player 1.
      * @param[in]   playerID2   ID of player 2.
@@ -183,10 +195,11 @@ public:
     }
     /**
      * @brief Compute new player ratings.
+     *
+     * @todo comment
      */
     void ComputeRatings()
     {
-        /// @todo implement
         // iterate through players
         for(auto it = m_Players.begin(); it != m_Players.end(); ++it)
         {
@@ -266,15 +279,24 @@ public:
         {
             player->AdoptNewValues();
         }
+        // cleanup games list
+        qDeleteAll(m_Games);
     }
 protected:
 private:
-    QMap<IDTYPE, Player *>  m_Players;              ///< The players.
-    QList<GameType *>       m_Games;                ///< The games played.
-    double                  m_DefaultRating{0};     ///< Default rating when creating a new player.
-    double                  m_DefaultDeviation{0};  ///< Default rating deviation when creating a new player
-    double                  m_DefaultVolatility{0}; ///< Default rating volatility when creating a new player
-    double                  m_Tau{0};               ///< Default rating volatility when creating a new player
+    QMap<IDTYPE, Player *>  m_Players;                          ///< The players.
+    QList<GameType *>       m_Games;                            ///< The games played.
+    double                  m_DefaultRating{GLICO_CONSTANT};    ///< Default rating when creating a new player. @todo needed?
+    double                  m_DefaultDeviation{0};              ///< Default rating deviation when creating a new player. @todo needed?
+    double                  m_DefaultVolatility{0};             ///< Default rating volatility when creating a new player.
+    double                  m_Tau{0};                           ///< Default rating volatility when creating a new player.
+    /**
+     * @todo comment
+     *
+     * @param playerID
+     * @param rating
+     * @return
+     */
     QList<helper> GetGames(const IDTYPE playerID, double rating)
     {
         QList<helper> result;
@@ -314,6 +336,16 @@ private:
         }
         return result;
     }
+    /**
+     * @todo comment
+     *
+     * @param x
+     * @param delta
+     * @param phi
+     * @param v
+     * @param a
+     * @return
+     */
     double f(double x, double delta, double phi, double v, double a)
     {
         return exp(x)*(delta*delta - phi*phi - v - exp(x))/2/(phi*phi + v + exp(x)) - (x - a)/m_Tau/m_Tau;
