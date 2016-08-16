@@ -7,8 +7,12 @@ V 0.1.0
 * exceptions
 * create player
 * remove player
-- add games
-- compute ratings
+* add games
+o compute ratings
+
+V 0.2.0
+=======
+- Bugfixing
 - directory structure
 - finish doxygen file
-- unit tests
+- add some unit tests

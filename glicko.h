@@ -24,6 +24,7 @@
 #define GLICKO_GLICKO_H
 
 #include "player.h"
+#include "game.h"
 #include "exceptions.h"
 #include "defines.h"
 #include <QMap>
@@ -37,6 +38,9 @@ namespace glicko
 template <typename IDTYPE> class Glicko
 {
     GL_DISABLE_COPY_AND_MOVE(Glicko)
+
+    using GameType = Game<IDTYPE>;
+
 public:
     /**
      * @brief Constructor.
@@ -57,6 +61,7 @@ public:
     ~Glicko()
     {
         qDeleteAll(m_Players);
+        qDeleteAll(m_Games);
     }
     /**
      * @brief Create a new player.
@@ -93,9 +98,21 @@ public:
         delete *it;
         m_Players.remove(playerID);
     }
+    /**
+     * @todo comment
+     *
+     * @param playerID1
+     * @param playerID2
+     * @param result
+     */
+    void AddGame(const IDTYPE &playerID1, const IDTYPE &playerID2, GameResult result)
+    {
+        m_Games.append(new GameType{playerID1, playerID2, result});
+    }
 protected:
 private:
     QMap<IDTYPE, Player *>  m_Players;              ///< The players.
+    QList<GameType *>       m_Games;                ///< The games played.
     double                  m_DefaultRating{0};     ///< Default rating when creating a new player.
     double                  m_DefaultDeviation{0};  ///< Default rating deviation when creating a new player
     double                  m_DefaultVolatility{0}; ///< Default rating volatility when creating a new player
