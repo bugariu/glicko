@@ -25,6 +25,7 @@
 
 #include "player.h"
 #include "exceptions.h"
+#include "defines.h"
 #include <QMap>
 
 namespace glicko
@@ -32,10 +33,10 @@ namespace glicko
 
 /**
  * @todo comment.
- * @todo no copy no move.
  */
 template <typename IDTYPE> class Glicko
 {
+    GL_DISABLE_COPY_AND_MOVE(Glicko)
 public:
     /**
      * @brief Constructor.
@@ -98,10 +99,6 @@ private:
     double                  m_DefaultRating{0};     ///< Default rating when creating a new player.
     double                  m_DefaultDeviation{0};  ///< Default rating deviation when creating a new player
     double                  m_DefaultVolatility{0}; ///< Default rating volatility when creating a new player
-    Glicko(const Glicko&) = delete;
-    Glicko(Glicko &&) = delete;
-    Glicko & operator = (const Glicko&) = delete;
-    Glicko & operator = (Glicko &&) = delete;
 };
 
 } // namespace glicko
