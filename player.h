@@ -31,7 +31,8 @@ namespace glicko
  *
  * It has a rating, a rating deviation and a rating volatility.
  * As a "current" value and a "new" value. The "new" value will be
- * taken when AdoptNewValue is called.
+ * taken when AdoptNewValues is called.
+ * @attention Values in glicko2 scale!
  */
 class Player
 {
@@ -82,7 +83,7 @@ public:
     /**
      * @brief Set new rating.
      *
-     * Rating will be adopted when AdoptNewValue is called.
+     * Rating will be adopted when AdoptNewValues is called.
      * @param[in]   rating      New rating.
      */
     void SetNewRating(double rating)
@@ -92,7 +93,7 @@ public:
     /**
      * @brief Set deviation.
      *
-     * Rating will be adopted when AdoptNewValue is called.
+     * Rating will be adopted when AdoptNewValues is called.
      * @param[in]   deviation       New deviation.
      */
     void SetNewDeviation(double deviation)
@@ -102,14 +103,17 @@ public:
     /**
      * @brief Set volatility.
      *
-     * Rating will be adopted when AdoptNewValue is called.
+     * Rating will be adopted when AdoptNewValues is called.
      * @param[in]   volatility      New volatility.
      */
     void SetNewVolatility(double volatility)
     {
         m_NewVolatility = volatility;
     }
-    void AdoptNewValue()
+    /**
+     * @brief AdoptNewValues
+     */
+    void AdoptNewValues()
     {
         m_Rating = m_NewRating;
         m_Deviation = m_NewDeviation;

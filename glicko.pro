@@ -10,5 +10,4 @@ HEADERS +=  defines.h \
             glicko.h \
             player.h
 
-SOURCES +=  glicko.cpp \
-            main.cpp
+SOURCES +=  main.cpp

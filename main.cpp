@@ -21,14 +21,36 @@
 ***************************************************************************/
 
 #include "glicko.h"
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {
     Q_UNUSED(argc);
     Q_UNUSED(argv);
 
-    glicko::Glicko<int> glicko{1500, 350, 1.0};
-    glicko.CreatePlayer(1);
-    glicko.CreatePlayer(2);
-    glicko.CreatePlayer(3);
+    glicko::Glicko<int> glicko{1500, 350, 0.06, 0.5};
+
+    // add some players
+    glicko.CreatePlayer(1, 1500, 200, 0.06);
+    glicko.CreatePlayer(2, 1400, 30, 0.06);
+    glicko.CreatePlayer(3, 1550, 100, 0.06);
+    glicko.CreatePlayer(4, 1700, 300, 0.06);
+
+
+    qDebug() << 1 << glicko.GetRating(1) << glicko.GetDeviation(1) << glicko.GetVolatility(1);
+    qDebug() << 2 << glicko.GetRating(2) << glicko.GetDeviation(2) << glicko.GetVolatility(2);
+    qDebug() << 3 << glicko.GetRating(3) << glicko.GetDeviation(3) << glicko.GetVolatility(3);
+    qDebug() << 4 << glicko.GetRating(4) << glicko.GetDeviation(4) << glicko.GetVolatility(4);
+
+
+    // add games
+    glicko.AddGame(1, 2, glicko::GameResult::Player1);
+    glicko.AddGame(1, 3, glicko::GameResult::Player2);
+    glicko.AddGame(1, 4, glicko::GameResult::Player2);
+
+    glicko.ComputeRatings();
+    qDebug() << 1 << glicko.GetRating(1) << glicko.GetDeviation(1) << glicko.GetVolatility(1);
+    qDebug() << 2 << glicko.GetRating(2) << glicko.GetDeviation(2) << glicko.GetVolatility(2);
+    qDebug() << 3 << glicko.GetRating(3) << glicko.GetDeviation(3) << glicko.GetVolatility(3);
+    qDebug() << 4 << glicko.GetRating(4) << glicko.GetDeviation(4) << glicko.GetVolatility(4);
 }
