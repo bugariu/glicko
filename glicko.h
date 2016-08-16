@@ -32,6 +32,7 @@ namespace glicko
 
 /**
  * @todo comment.
+ * @todo no copy no move.
  */
 template <typename IDTYPE> class Glicko
 {
@@ -59,7 +60,8 @@ public:
     /**
      * @brief Create a new player.
      *
-     * PLayer will be created with the default values for rating, deviation and volatility.
+     * Player will be created with the default values for rating, deviation and volatility.
+     * @throws glicko::GlickoException when player with this ID already exists.
      * @param[in]   playerID    ID of the player.
      */
     void CreatePlayer(const IDTYPE &playerID)
@@ -72,12 +74,34 @@ public:
         // create player
         m_Players[playerID] = new Player{m_DefaultRating, m_DefaultDeviation, m_DefaultVolatility};
     }
+    /**
+     * @brief remove a player.
+     *
+     * @throws glicko::GlickoException when player with this ID does not exist.
+     * @param[in]   playerID    ID of the player.
+     */
+    void RemovePlayer(const IDTYPE &playerID)
+    {
+        auto it = m_Players.find(playerID);
+        // check if player with this ID already exists
+        if(it == m_Players.end())
+        {
+            GLTHROW("Player with this ID does not exist.");
+        }
+        // remove player
+        delete *it;
+        m_Players.remove(playerID);
+    }
 protected:
 private:
     QMap<IDTYPE, Player *>  m_Players;              ///< The players.
     double                  m_DefaultRating{0};     ///< Default rating when creating a new player.
     double                  m_DefaultDeviation{0};  ///< Default rating deviation when creating a new player
     double                  m_DefaultVolatility{0}; ///< Default rating volatility when creating a new player
+    Glicko(const Glicko&) = delete;
+    Glicko(Glicko &&) = delete;
+    Glicko & operator = (const Glicko&) = delete;
+    Glicko & operator = (Glicko &&) = delete;
 };
 
 } // namespace glicko

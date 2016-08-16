@@ -6,8 +6,9 @@ V 0.1.0
 * add doxygen file
 * exceptions
 * create player
-- remove player
+* remove player
 - add games
 - compute ratings
 - directory structure
 - finish doxygen file
+- unit tests
