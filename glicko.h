@@ -281,6 +281,7 @@ public:
         }
         // cleanup games list
         qDeleteAll(m_Games);
+        m_Games.clear();
     }
 protected:
 private:
