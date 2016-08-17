@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     Q_UNUSED(argc);
     Q_UNUSED(argv);
 
-    glicko::Glicko<int> glicko{1500, 350, 0.06, 0.5};
+    glicko::Glicko<int> glicko{0.06, 0.5};
 
     // add some players
     glicko.CreatePlayer(1, 1500, 200, 0.06);

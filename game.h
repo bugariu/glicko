@@ -35,7 +35,7 @@ namespace glicko
 enum class GameResult
 {
     Player1,    ///< Player 1 has won.
-    Tie,        ///< Tie.
+    Draw,       ///< Draw.
     Player2     ///< player 2 has won.
 };
 
@@ -89,7 +89,7 @@ protected:
 private:
     IDTYPE      m_Player1;                  ///< ID of player 1.
     IDTYPE      m_Player2;                  ///< ID of player 2.
-    GameResult  m_Result{GameResult::Tie};  ///< Game result.
+    GameResult  m_Result{GameResult::Draw}; ///< Game result.
 };
 
 } // namespace glicko

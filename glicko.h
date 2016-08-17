@@ -41,6 +41,7 @@ namespace
 constexpr double PI = 3.141592653589793238462643383279502884;   ///< @todo comment
 constexpr double GLICO_CONSTANT = 173.7178;                     ///< @todo comment
 constexpr double INITIAL_RATING = 1500;                         ///< @todo comment
+constexpr double INITIAL_DEVIATION = 350;                       ///< @todo comment
 }
 
 /**
@@ -56,29 +57,25 @@ private:
     /**
      * @todo comment
      */
-    struct helper
+    struct GameHelper
     {
-        double  mu;
-        double  phi;
-        double  g;
-        double  E;
-        double  s;
+        double  mu;     ///< @todo comment
+        double  phi;    ///< @todo comment
+        double  g;      ///< @todo comment
+        double  E;      ///< @todo comment
+        double  s;      ///< @todo comment
     };
 
-    using GameType = Game<IDTYPE>;
+    using GameType = Game<IDTYPE>;  ///< @todo comment
 
 public:
     /**
      * @brief Constructor.
      *
-     * @param[in]   initialRating       Initial rating.
-     * @param[in]   initialDeviation    Initial rating deviation.
      * @param[in]   initialVolatility   Initial rating volatility.
-     * @param[in]   tau                 tau system constant.
+     * @param[in]   tau                 Tau system constant.
      */
-    Glicko(double initialRating, double initialDeviation, double initialVolatility, double tau):
-        m_DefaultRating{initialRating},
-        m_DefaultDeviation{initialDeviation},
+    Glicko(double initialVolatility, double tau):
         m_DefaultVolatility{initialVolatility},
         m_Tau{tau}
     {
@@ -106,7 +103,7 @@ public:
             GLTHROW("Player with this ID already exists.");
         }
         // create player
-        m_Players[playerID] = new Player{(m_DefaultRating-INITIAL_RATING)/GLICO_CONSTANT, m_DefaultDeviation/GLICO_CONSTANT, m_DefaultVolatility};
+        m_Players[playerID] = new Player{0, INITIAL_DEVIATION/GLICO_CONSTANT, m_DefaultVolatility};
     }
     /**
      * @brief Create a new player.
@@ -208,7 +205,7 @@ public:
         {
             IDTYPE playerID = it.key();
             Player *player = it.value();
-            QList<helper> playedGames = GetGames(playerID, player->GetRating());
+            QList<GameHelper> playedGames = GetGames(playerID, player->GetRating());
             // compute new ratings for player
             if(!playedGames.empty())
             {
@@ -290,20 +287,18 @@ protected:
 private:
     QMap<IDTYPE, Player *>  m_Players;                          ///< The players.
     QList<GameType *>       m_Games;                            ///< The games played.
-    double                  m_DefaultRating{GLICO_CONSTANT};    ///< Default rating when creating a new player. @todo needed?
-    double                  m_DefaultDeviation{0};              ///< Default rating deviation when creating a new player. @todo needed?
     double                  m_DefaultVolatility{0};             ///< Default rating volatility when creating a new player.
-    double                  m_Tau{0};                           ///< Default rating volatility when creating a new player.
+    double                  m_Tau{0};                           ///< Tau system constant.
     /**
      * @todo comment
      *
-     * @param playerID
-     * @param rating
+     * @param[in]   playerID
+     * @param[in]   rating
      * @return
      */
-    QList<helper> GetGames(const IDTYPE playerID, double rating)
+    QList<GameHelper> GetGames(const IDTYPE playerID, double rating)
     {
-        QList<helper> result;
+        QList<GameHelper> result;
         // search for played games and add according results
         for(auto game : m_Games)
         {
@@ -316,7 +311,7 @@ private:
                 if(it != m_Players.end())
                 {
                     opponent = *it;
-                    s = (game->GetResult() == GameResult::Player1) ? 1 : ((game->GetResult() == GameResult::Tie) ? 0.5 : 0);
+                    s = (game->GetResult() == GameResult::Player1) ? 1 : ((game->GetResult() == GameResult::Draw) ? 0.5 : 0);
                 }
             }
             else if(game->GetPlayer2ID() == playerID)
@@ -326,7 +321,7 @@ private:
                 if(it != m_Players.end())
                 {
                     opponent = *it;
-                    s = (game->GetResult() == GameResult::Player2) ? 1 : ((game->GetResult() == GameResult::Tie) ? 0.5 : 0);
+                    s = (game->GetResult() == GameResult::Player2) ? 1 : ((game->GetResult() == GameResult::Draw) ? 0.5 : 0);
                 }
             }
             if(opponent != nullptr)
@@ -341,13 +336,14 @@ private:
         return result;
     }
     /**
+     * @brief f function.
      * @todo comment
      *
-     * @param x
-     * @param delta
-     * @param phi
-     * @param v
-     * @param a
+     * @param[in]   x
+     * @param[in]   delta
+     * @param[in]   phi
+     * @param[in]   v
+     * @param[in]   a
      * @return
      */
     double f(double x, double delta, double phi, double v, double a)
