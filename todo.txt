@@ -8,11 +8,11 @@ V 0.1.0
 * create player
 * remove player
 * add games
-o compute ratings
+* compute ratings
+* finish doxygen file
 
 V 0.2.0
 =======
 - Bugfixing
 - directory structure
-- finish doxygen file
 - add some unit tests
