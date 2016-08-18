@@ -190,7 +190,7 @@ private:
 
 
     /**
-     * @todo comment
+     * @brief Helper struct for games.
      */
     struct GameHelper
     {
@@ -445,7 +445,8 @@ public:
     /**
      * @brief Compute new player ratings.
      *
-     * @todo comment
+     * Ratings for all players are updated.
+     * @attention List of played games is deleted after computing new ratings.
      */
     void ComputeRatings()
     {
@@ -586,13 +587,13 @@ private:
     }
     /**
      * @brief f function.
-     * @todo comment
      *
-     * @param[in]   x
-     * @param[in]   delta
-     * @param[in]   phi
-     * @param[in]   v
-     * @param[in]   a
+     * @todo comment
+     * @param[in]   x       @todo comment
+     * @param[in]   delta   @todo comment
+     * @param[in]   phi     @todo comment
+     * @param[in]   v       @todo comment
+     * @param[in]   a       @todo comment
      * @return
      */
     double f(double x, double delta, double phi, double v, double a)
