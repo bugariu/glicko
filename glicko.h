@@ -34,15 +34,15 @@ namespace glicko
 
 namespace
 {
-constexpr double PI = 3.141592653589793238462643383279502884;   ///< @todo comment
-constexpr double GLICO_CONSTANT = 173.7178;                     ///< @todo comment
-constexpr double INITIAL_RATING = 1500;                         ///< @todo comment
-constexpr double INITIAL_DEVIATION = 350;                       ///< @todo comment
+constexpr double PI = 3.141592653589793238462643383279502884;   ///< PI constant.
+constexpr double GLICO_CONSTANT = 173.7178;                     ///< The glicko constant to convert from glicko to glicko2 ratings.
+constexpr double INITIAL_RATING = 1500;                         ///< Initial glicko rating for a new player.
+constexpr double INITIAL_DEVIATION = 350;                       ///< Initial glicko rating deviation for a new player.
 
 /**
- * @brief Additional macro to throw an exception.
+ * @brief Additional macro to throw an exception of type glicko::GlickoException.
  *
- * @param[in] msg   the message.
+ * @param[in] msg   The message.
  */
 #define GLTHROW(msg) throw glicko::GlickoException{msg, __FILE__, __LINE__};
 
@@ -188,7 +188,6 @@ private:
         IDTYPE      m_Player2;                  ///< ID of player 2.
         GameResult  m_Result{GameResult::Draw}; ///< Game result.
     };
-
 
     /**
      * @todo comment
@@ -362,7 +361,7 @@ public:
         m_Players[playerID] = new Player{(initialRating-INITIAL_RATING)/GLICO_CONSTANT, initialDeviation/GLICO_CONSTANT, initialVolatility};
     }
     /**
-     * @brief remove a player.
+     * @brief Remove a player.
      *
      * @throws glicko::GlickoException when player with this ID does not exist.
      * @param[in]   playerID    ID of the player.
@@ -380,7 +379,11 @@ public:
         m_Players.remove(playerID);
     }
     /**
-     * @todo comment
+     * @brief Get rating for one player.
+     *
+     * @throws glicko::GlickoException when player with this ID does not exist.
+     * @param[in]   playerID    ID of the player.
+     * @retun                   Player rating.
      */
     double GetRating(const IDTYPE &playerID)
     {
@@ -393,7 +396,11 @@ public:
         return GLICO_CONSTANT*(*it)->GetRating() + INITIAL_RATING;
     }
     /**
-     * @todo comment
+     * @brief Get rating deviation for one player.
+     *
+     * @throws glicko::GlickoException when player with this ID does not exist.
+     * @param[in]   playerID    ID of the player.
+     * @retun                   Player rating deviation.
      */
     double GetDeviation(const IDTYPE &playerID)
     {
@@ -406,7 +413,11 @@ public:
         return GLICO_CONSTANT*(*it)->GetDeviation();
     }
     /**
-     * @todo comment
+     * @brief Get rating volatility for one player.
+     *
+     * @throws glicko::GlickoException when player with this ID does not exist.
+     * @param[in]   playerID    ID of the player.
+     * @retun                   Player rating volatility.
      */
     double GetVolatility(const IDTYPE &playerID)
     {
@@ -441,7 +452,7 @@ public:
         {
             IDTYPE playerID = it.key();
             Player *player = it.value();
-            QList<GameHelper> playedGames = GetGames(playerID, player->GetRating());
+            QList<GameHelper> playedGames = CreateGameHelperList(playerID, player->GetRating());
             // compute new ratings for player
             if(!playedGames.empty())
             {
@@ -522,17 +533,17 @@ public:
 protected:
 private:
     QMap<IDTYPE, Player *>  m_Players;                          ///< The players.
-    QList<Game *>       m_Games;                            ///< The games played.
+    QList<Game *>           m_Games;                            ///< The games played.
     double                  m_DefaultVolatility{0};             ///< Default rating volatility when creating a new player.
     double                  m_Tau{0};                           ///< Tau system constant.
     /**
-     * @todo comment
+     * @brief Create and fill list of game helper structs.
      *
-     * @param[in]   playerID
-     * @param[in]   rating
-     * @return
+     * @param[in]   playerID        Player ID.
+     * @param[in]   playerRating    Rating for player.
+     * @return                      The list of game helper structs
      */
-    QList<GameHelper> GetGames(const IDTYPE playerID, double rating)
+    QList<GameHelper> CreateGameHelperList(const IDTYPE playerID, double playerRating)
     {
         QList<GameHelper> result;
         // search for played games and add according results
@@ -565,7 +576,7 @@ private:
                 double mu = opponent->GetRating();
                 double phi = opponent->GetDeviation();
                 double g = 1/sqrt(1+3*phi*phi/PI/PI);
-                double E = 1/(1+exp(-g*(rating-mu)));
+                double E = 1/(1+exp(-g*(playerRating-mu)));
                 result.append({mu, phi, g, E, s});
             }
         }
