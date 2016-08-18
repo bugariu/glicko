@@ -51,6 +51,8 @@ int main(int argc, char *argv[])
     glicko.AddGame(1, 3, glicko::GameResult::Player2);
     glicko.AddGame(1, 4, glicko::GameResult::Player2);
 
+
+    // compute ratings
     glicko.ComputeRatings();
     qDebug() << 1 << glicko.GetRating(1) << glicko.GetDeviation(1) << glicko.GetVolatility(1);
     qDebug() << 2 << glicko.GetRating(2) << glicko.GetDeviation(2) << glicko.GetVolatility(2);

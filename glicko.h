@@ -46,26 +46,6 @@ constexpr double INITIAL_DEVIATION = 350;                       ///< Initial gli
  */
 #define GLTHROW(msg) throw glicko::GlickoException{msg, __FILE__, __LINE__};
 
-/**
- * @brief Additional macro to prevent copy of a class.
- *
- * @param[in] Class Class name.
- */
-#define GL_DISABLE_COPY(Class) Class(const Class &) = delete; Class &operator=(const Class &) = delete;
-
-/**
- * @brief Additional macro to prevent move of a class.
- *
- * @param[in] Class Class name.
- */
-#define GL_DISABLE_MOVE(Class) Class(Class &&) = delete; Class &operator=(Class &&) = delete;
-
-/**
- * @brief Additional macro to prevent copy and move of a class.
- *
- * @param[in] Class Class name.
- */
-#define GL_DISABLE_COPY_AND_MOVE(Class) GL_DISABLE_COPY(Class) GL_DISABLE_MOVE(Class)
 }
 
 
@@ -132,7 +112,6 @@ enum class GameResult
  */
 template <typename IDTYPE> class Glicko
 {
-    GL_DISABLE_COPY_AND_MOVE(Glicko);
 
 private:
     /**
