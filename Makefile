@@ -1,9 +1,9 @@
 CC=gcc
 CXX=g++
 RM=rm -f
-CPPFLAGS=-O2 -Wall -Wextra -pedantic
-LDFLAGS=-O2 -Wall -Wextra -pedantic
-LDLIBS=$(shell root-config --libs)
+CPPFLAGS=-std=c++14 -O2 -Wall -Wextra -pedantic
+LDFLAGS=-std=c++14 -O2 -Wall -Wextra -pedantic
+LDLIBS=
 
 SRCS=main.cpp
 OBJS=$(subst .cpp,.o,$(SRCS))
@@ -22,7 +22,8 @@ depend: .depend
 clean:
 	$(RM) $(OBJS)
 
-dist-clean: clean
+distclean: clean
 	$(RM) *~ .depend
+	$(RM) glicko
 
 include .depend
