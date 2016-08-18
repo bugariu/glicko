@@ -1,6 +1,6 @@
 /******************************************************************************//**
  * @file
- * @brief Class glicko::Glicko
+ * @brief The glicko system
  *
  * @copyright Copyright (C) by Doru Julian Bugariu
  * julian@bugariu.eu
