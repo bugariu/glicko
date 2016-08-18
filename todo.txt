@@ -10,9 +10,8 @@ V 0.1.0
 * add games
 * compute ratings
 * finish doxygen file
+* all in one file
 
 V 0.2.0
 =======
-- Bugfixing
-- directory structure
 - add some unit tests

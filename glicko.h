@@ -26,10 +26,6 @@
 #ifndef GLICKO_GLICKO_H
 #define GLICKO_GLICKO_H
 
-#include "player.h"
-#include "game.h"
-#include "exceptions.h"
-#include "defines.h"
 #include <QMap>
 #include <cmath>
 
@@ -42,7 +38,91 @@ constexpr double PI = 3.141592653589793238462643383279502884;   ///< @todo comme
 constexpr double GLICO_CONSTANT = 173.7178;                     ///< @todo comment
 constexpr double INITIAL_RATING = 1500;                         ///< @todo comment
 constexpr double INITIAL_DEVIATION = 350;                       ///< @todo comment
+
+/**
+ * @brief Additional macro to throw an exception.
+ *
+ * @param[in] msg   the message.
+ */
+#define GLTHROW(msg) throw glicko::GlickoException{msg, __FILE__, __LINE__};
+
+/**
+ * @brief Additional macro to prevent copy of a class.
+ *
+ * @param[in] Class Class name.
+ */
+#define GL_DISABLE_COPY(Class) Class(const Class &) = delete; Class &operator=(const Class &) = delete;
+
+/**
+ * @brief Additional macro to prevent move of a class.
+ *
+ * @param[in] Class Class name.
+ */
+#define GL_DISABLE_MOVE(Class) Class(Class &&) = delete; Class &operator=(Class &&) = delete;
+
+/**
+ * @brief Additional macro to prevent copy and move of a class.
+ *
+ * @param[in] Class Class name.
+ */
+#define GL_DISABLE_COPY_AND_MOVE(Class) GL_DISABLE_COPY(Class) GL_DISABLE_MOVE(Class)
 }
+
+/**
+ * @brief Glicko exception.
+ *
+ * Saves file name and line number where exception was thrown.
+ */
+class GlickoException : public std::runtime_error
+{
+public:
+    /**
+     * @brief Constructor
+     *
+     * @param[in]   message     Message of exception.
+     * @param[in]   fileName    File name where exception occured.
+     * @param[in]   line        Line where exception occured.
+     */
+    GlickoException(const QString &message, const QString &fileName, int line):
+        std::runtime_error{message.toUtf8().constData()},
+        m_FileName{fileName},
+        m_Line{line}
+    {
+    }
+    /**
+     * @brief Get file name.
+     *
+     * @return File name.
+     */
+    QString GetFileName() const
+    {
+        return m_FileName;
+    }
+    /**
+     * @brief Get line number.
+     *
+     * @return Line number.
+     */
+    int GetLine() const
+    {
+        return m_Line;
+    }
+private:
+    QString     m_FileName; ///< File name where exception occured.
+    int         m_Line;     ///< Line in which exception occured.
+};
+
+/**
+ * @brief Game result
+ */
+enum class GameResult
+{
+    Player1,    ///< Player 1 has won.
+    Draw,       ///< Draw.
+    Player2     ///< player 2 has won.
+};
+
+
 
 /**
  * @brief The glicko system.
@@ -54,6 +134,62 @@ template <typename IDTYPE> class Glicko
     GL_DISABLE_COPY_AND_MOVE(Glicko);
 
 private:
+
+
+    /**
+     * @brief Game class
+     */
+    class Game
+    {
+    public:
+        /**
+         * @brief Constructor
+         *
+         * @param[in]   player1ID   ID of player 1.
+         * @param[in]   player2ID   ID of player 2.
+         * @param[in]   result      Game result.
+         */
+        Game(const IDTYPE &player1ID, const IDTYPE &player2ID, GameResult result):
+            m_Player1{player1ID},
+            m_Player2{player2ID},
+            m_Result{result}
+        {
+        }
+        /**
+         * @brief Get ID of player 1.
+         *
+         * @return ID of player 1.
+         */
+        IDTYPE GetPlayer1ID() const
+        {
+            return m_Player1;
+        }
+        /**
+         * @brief Get ID of player 2.
+         *
+         * @return ID of player 2.
+         */
+        IDTYPE GetPlayer2ID() const
+        {
+            return m_Player2;
+        }
+        /**
+         * @brief Get Game result.
+         *
+         * @return Game result.
+         */
+        GameResult GetResult() const
+        {
+            return m_Result;
+        }
+    protected:
+    private:
+        IDTYPE      m_Player1;                  ///< ID of player 1.
+        IDTYPE      m_Player2;                  ///< ID of player 2.
+        GameResult  m_Result{GameResult::Draw}; ///< Game result.
+    };
+
+
     /**
      * @todo comment
      */
@@ -66,7 +202,107 @@ private:
         double  s;      ///< @todo comment
     };
 
-    using GameType = Game<IDTYPE>;  ///< @todo comment
+    /**
+     * @brief Class describing one player.
+     *
+     * It has a rating, a rating deviation and a rating volatility.
+     * As a "current" value and a "new" value. The "new" value will be
+     * taken when AdoptNewValues is called.
+     * @attention Values in glicko2 scale!
+     */
+    class Player
+    {
+    public:
+        /**
+         * @brief Constructor.
+         *
+         * @param[in]   initialRating       Initial rating.
+         * @param[in]   initialDeviation    Initial rating deviation.
+         * @param[in]   initialVolatility   Initial rating volatility.
+         */
+        Player(double initialRating, double initialDeviation, double initialVolatility):
+            m_Rating{initialRating},
+            m_Deviation{initialDeviation},
+            m_Volatility{initialVolatility},
+            m_NewRating{initialRating},
+            m_NewDeviation{initialDeviation},
+            m_NewVolatility{initialVolatility}
+        {
+        }
+        /**
+         * @brief Get rating.
+         *
+         * @return  Current rating.
+         */
+        double GetRating() const
+        {
+            return m_Rating;
+        }
+        /**
+         * @brief Get deviation.
+         *
+         * @return  Current deviation.
+         */
+        double GetDeviation() const
+        {
+            return m_Deviation;
+        }
+        /**
+         * @brief Get volatility.
+         *
+         * @return  Current volatility.
+         */
+        double GetVolatility() const
+        {
+            return m_Volatility;
+        }
+        /**
+         * @brief Set new rating.
+         *
+         * Rating will be adopted when AdoptNewValues is called.
+         * @param[in]   rating      New rating.
+         */
+        void SetNewRating(double rating)
+        {
+            m_NewRating = rating;
+        }
+        /**
+         * @brief Set deviation.
+         *
+         * Rating will be adopted when AdoptNewValues is called.
+         * @param[in]   deviation       New deviation.
+         */
+        void SetNewDeviation(double deviation)
+        {
+            m_NewDeviation = deviation;
+        }
+        /**
+         * @brief Set volatility.
+         *
+         * Rating will be adopted when AdoptNewValues is called.
+         * @param[in]   volatility      New volatility.
+         */
+        void SetNewVolatility(double volatility)
+        {
+            m_NewVolatility = volatility;
+        }
+        /**
+         * @brief AdoptNewValues
+         */
+        void AdoptNewValues()
+        {
+            m_Rating = m_NewRating;
+            m_Deviation = m_NewDeviation;
+            m_Volatility = m_NewVolatility;
+        }
+    private:
+        double      m_Rating{0};            ///< Player's current rating.
+        double      m_Deviation{0};         ///< Player's current rating deviation.
+        double      m_Volatility{0};        ///< Player's current rating volatility.
+        double      m_NewRating{0};         ///< Player's new rating.
+        double      m_NewDeviation{0};      ///< Player's new rating deviation.
+        double      m_NewVolatility{0};     ///< Player's new rating volatility.
+    };
 
 public:
     /**
@@ -191,7 +427,7 @@ public:
      */
     void AddGame(const IDTYPE &playerID1, const IDTYPE &playerID2, GameResult result)
     {
-        m_Games.append(new GameType{playerID1, playerID2, result});
+        m_Games.append(new Game{playerID1, playerID2, result});
     }
     /**
      * @brief Compute new player ratings.
@@ -286,7 +522,7 @@ public:
 protected:
 private:
     QMap<IDTYPE, Player *>  m_Players;                          ///< The players.
-    QList<GameType *>       m_Games;                            ///< The games played.
+    QList<Game *>       m_Games;                            ///< The games played.
     double                  m_DefaultVolatility{0};             ///< Default rating volatility when creating a new player.
     double                  m_Tau{0};                           ///< Tau system constant.
     /**
