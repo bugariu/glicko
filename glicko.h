@@ -318,14 +318,6 @@ public:
     {
     }
     /**
-     * @brief Destructor.
-     */
-    ~Glicko()
-    {
-        DeleteMap(m_Players);
-        DeleteList(m_Games);
-    }
-    /**
      * @brief Create a new player.
      *
      * Player will be created with the default values for rating, deviation and volatility.
@@ -340,7 +332,7 @@ public:
             GLTHROW("Player with this ID already exists.");
         }
         // create player
-        m_Players[playerID] = new Player{0, INITIAL_DEVIATION/GLICO_CONSTANT, m_DefaultVolatility};
+        m_Players.insert({playerID, {0, INITIAL_DEVIATION/GLICO_CONSTANT, m_DefaultVolatility}});
     }
     /**
      * @brief Create a new player.
@@ -360,7 +352,7 @@ public:
             GLTHROW("Player with this ID already exists.");
         }
         // create player
-        m_Players[playerID] = new Player{(initialRating-INITIAL_RATING)/GLICO_CONSTANT, initialDeviation/GLICO_CONSTANT, initialVolatility};
+        m_Players.insert({playerID, {(initialRating-INITIAL_RATING)/GLICO_CONSTANT, initialDeviation/GLICO_CONSTANT, initialVolatility}});
     }
     /**
      * @brief Remove a player.
@@ -395,7 +387,7 @@ public:
         {
             GLTHROW("Player with this ID does not exist.");
         }
-        return GLICO_CONSTANT*it->second->GetRating() + INITIAL_RATING;
+        return GLICO_CONSTANT * it->second.GetRating() + INITIAL_RATING;
     }
     /**
      * @brief Get rating deviation for one player.
@@ -412,7 +404,7 @@ public:
         {
             GLTHROW("Player with this ID does not exist.");
         }
-        return GLICO_CONSTANT*it->second->GetDeviation();
+        return GLICO_CONSTANT * it->second.GetDeviation();
     }
     /**
      * @brief Get rating volatility for one player.
@@ -429,7 +421,7 @@ public:
         {
             GLTHROW("Player with this ID does not exist.");
         }
-        return it->second->GetVolatility();
+        return it->second.GetVolatility();
     }
     /**
      * @brief Add a game.
@@ -440,7 +432,7 @@ public:
      */
     void AddGame(const IDTYPE &playerID1, const IDTYPE &playerID2, GameResult result)
     {
-        m_Games.push_back(new Game{playerID1, playerID2, result});
+        m_Games.push_back({playerID1, playerID2, result});
     }
     /**
      * @brief Compute new player ratings.
@@ -454,8 +446,8 @@ public:
         for(auto it = m_Players.begin(); it != m_Players.end(); ++it)
         {
             IDTYPE playerID = it->first;
-            Player *player = it->second;
-            std::list<GameHelper> playedGames = CreateGameHelperList(playerID, player->GetRating());
+            Player & player = it->second;
+            std::list<GameHelper> playedGames = CreateGameHelperList(playerID, player.GetRating());
             // compute new ratings for player
             if(!playedGames.empty())
             {
@@ -470,8 +462,8 @@ public:
                 v = 1/v;
                 delta = v*delta;
                 // start iteration
-                double sigma = player->GetVolatility();
-                double phi = player->GetDeviation();
+                double sigma = player.GetVolatility();
+                double phi = player.GetDeviation();
                 double a = log(sigma*sigma);
                 double A = a;
                 double B = 0;
@@ -511,31 +503,31 @@ public:
                 double newSigma = exp(A/2);
                 double phiStarSquare = phi*phi + newSigma*newSigma;
                 double newPhi = 1/sqrt(1/phiStarSquare + 1/v);
-                double newMu = player->GetRating() + newPhi*newPhi*delta/v;
-                player->SetNewRating(newMu);
-                player->SetNewDeviation(newPhi);
-                player->SetNewVolatility(newSigma);
+                double newMu = player.GetRating() + newPhi*newPhi*delta/v;
+                player.SetNewRating(newMu);
+                player.SetNewDeviation(newPhi);
+                player.SetNewVolatility(newSigma);
             }
             else
             {
                 // player has not played any games
-                double phi = player->GetDeviation();
-                double sigma = player->GetVolatility();
-                player->SetNewDeviation(sqrt(phi*phi + sigma*sigma));
+                double phi = player.GetDeviation();
+                double sigma = player.GetVolatility();
+                player.SetNewDeviation(sqrt(phi*phi + sigma*sigma));
             }
         }
         // adopt new ratings for each player
         for(auto & player : m_Players)
         {
-            player.second->AdoptNewValues();
+            player.second.AdoptNewValues();
         }
         // cleanup games list
-        DeleteList(m_Games);
+        m_Games.clear();
     }
 protected:
 private:
-    std::map<IDTYPE, Player *>  m_Players;                          ///< The players.
-    std::list<Game *>           m_Games;                            ///< The games played.
+    std::map<IDTYPE, Player>    m_Players;                          ///< The players.
+    std::list<Game>             m_Games;                            ///< The games played.
     double                      m_DefaultVolatility{0};             ///< Default rating volatility when creating a new player.
     double                      m_Tau{0};                           ///< Tau system constant.
     /**
@@ -551,26 +543,26 @@ private:
         // search for played games and add according results
         for(auto game : m_Games)
         {
-            Player *opponent = nullptr;
+            const Player * opponent{nullptr};
             double s = 0;
-            if(game->GetPlayer1ID() == playerID)
+            if(game.GetPlayer1ID() == playerID)
             {
                 // we are the first player
-                auto it = m_Players.find(game->GetPlayer2ID());
+                auto it = m_Players.find(game.GetPlayer2ID());
                 if(it != m_Players.end())
                 {
-                    opponent = it->second;
-                    s = (game->GetResult() == GameResult::Player1) ? 1 : ((game->GetResult() == GameResult::Draw) ? 0.5 : 0);
+                    opponent = &(it->second);
+                    s = (game.GetResult() == GameResult::Player1) ? 1 : ((game.GetResult() == GameResult::Draw) ? 0.5 : 0);
                 }
             }
-            else if(game->GetPlayer2ID() == playerID)
+            else if(game.GetPlayer2ID() == playerID)
             {
                 // we are the second player
-                auto it = m_Players.find(game->GetPlayer1ID());
+                auto it = m_Players.find(game.GetPlayer1ID());
                 if(it != m_Players.end())
                 {
-                    opponent = it->second;
-                    s = (game->GetResult() == GameResult::Player2) ? 1 : ((game->GetResult() == GameResult::Draw) ? 0.5 : 0);
+                    opponent = &(it->second);
+                    s = (game.GetResult() == GameResult::Player2) ? 1 : ((game.GetResult() == GameResult::Draw) ? 0.5 : 0);
                 }
             }
             if(opponent != nullptr)
@@ -598,28 +590,6 @@ private:
     double f(double x, double delta, double phi, double v, double a)
     {
         return exp(x)*(delta*delta - phi*phi - v - exp(x))/2/(phi*phi + v + exp(x)) - (x - a)/m_Tau/m_Tau;
-    }
-    /**
-     * @todo comment
-     */
-    template <typename T> void DeleteMap(T & t)
-    {
-        for(auto & it : t)
-        {
-            delete it.second;
-        }
-        t.clear();
-    }
-    /**
-     * @todo comment
-     */
-    template <typename T> void DeleteList(T & t)
-    {
-        for(auto & it : t)
-        {
-            delete it;
-        }
-        t.clear();
     }
 };
 
