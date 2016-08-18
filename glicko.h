@@ -26,7 +26,8 @@
 #ifndef GLICKO_GLICKO_H
 #define GLICKO_GLICKO_H
 
-#include <QMap>
+#include <map>
+#include <list>
 #include <cmath>
 
 namespace glicko
@@ -34,7 +35,6 @@ namespace glicko
 
 namespace
 {
-constexpr double PI = 3.141592653589793238462643383279502884;   ///< PI constant.
 constexpr double GLICO_CONSTANT = 173.7178;                     ///< The glicko constant to convert from glicko to glicko2 ratings.
 constexpr double INITIAL_RATING = 1500;                         ///< Initial glicko rating for a new player.
 constexpr double INITIAL_DEVIATION = 350;                       ///< Initial glicko rating deviation for a new player.
@@ -84,8 +84,8 @@ public:
      * @param[in]   fileName    File name where exception occured.
      * @param[in]   line        Line where exception occured.
      */
-    GlickoException(const QString &message, const QString &fileName, int line):
-        std::runtime_error{message.toUtf8().constData()},
+    GlickoException(const std::string &message, const std::string &fileName, int line):
+        std::runtime_error{message},
         m_FileName{fileName},
         m_Line{line}
     {
@@ -95,7 +95,7 @@ public:
      *
      * @return File name.
      */
-    QString GetFileName() const
+    std::string GetFileName() const
     {
         return m_FileName;
     }
@@ -109,7 +109,7 @@ public:
         return m_Line;
     }
 private:
-    QString     m_FileName; ///< File name where exception occured.
+    std::string m_FileName; ///< File name where exception occured.
     int         m_Line;     ///< Line in which exception occured.
 };
 
@@ -322,8 +322,8 @@ public:
      */
     ~Glicko()
     {
-        qDeleteAll(m_Players);
-        qDeleteAll(m_Games);
+        DeleteMap(m_Players);
+        DeleteList(m_Games);
     }
     /**
      * @brief Create a new player.
@@ -335,7 +335,7 @@ public:
     void CreatePlayer(const IDTYPE &playerID)
     {
         // check if player with this ID already exists
-        if(m_Players.contains(playerID))
+        if(m_Players.find(playerID) != m_Players.end())
         {
             GLTHROW("Player with this ID already exists.");
         }
@@ -355,7 +355,7 @@ public:
     void CreatePlayer(const IDTYPE &playerID, double initialRating, double initialDeviation, double initialVolatility)
     {
         // check if player with this ID already exists
-        if(m_Players.contains(playerID))
+        if(m_Players.find(playerID) != m_Players.end())
         {
             GLTHROW("Player with this ID already exists.");
         }
@@ -395,7 +395,7 @@ public:
         {
             GLTHROW("Player with this ID does not exist.");
         }
-        return GLICO_CONSTANT*(*it)->GetRating() + INITIAL_RATING;
+        return GLICO_CONSTANT*it->second->GetRating() + INITIAL_RATING;
     }
     /**
      * @brief Get rating deviation for one player.
@@ -412,7 +412,7 @@ public:
         {
             GLTHROW("Player with this ID does not exist.");
         }
-        return GLICO_CONSTANT*(*it)->GetDeviation();
+        return GLICO_CONSTANT*it->second->GetDeviation();
     }
     /**
      * @brief Get rating volatility for one player.
@@ -429,7 +429,7 @@ public:
         {
             GLTHROW("Player with this ID does not exist.");
         }
-        return (*it)->GetVolatility();
+        return it->second->GetVolatility();
     }
     /**
      * @brief Add a game.
@@ -440,7 +440,7 @@ public:
      */
     void AddGame(const IDTYPE &playerID1, const IDTYPE &playerID2, GameResult result)
     {
-        m_Games.append(new Game{playerID1, playerID2, result});
+        m_Games.push_back(new Game{playerID1, playerID2, result});
     }
     /**
      * @brief Compute new player ratings.
@@ -453,9 +453,9 @@ public:
         // iterate through players
         for(auto it = m_Players.begin(); it != m_Players.end(); ++it)
         {
-            IDTYPE playerID = it.key();
-            Player *player = it.value();
-            QList<GameHelper> playedGames = CreateGameHelperList(playerID, player->GetRating());
+            IDTYPE playerID = it->first;
+            Player *player = it->second;
+            std::list<GameHelper> playedGames = CreateGameHelperList(playerID, player->GetRating());
             // compute new ratings for player
             if(!playedGames.empty())
             {
@@ -527,18 +527,17 @@ public:
         // adopt new ratings for each player
         for(auto & player : m_Players)
         {
-            player->AdoptNewValues();
+            player.second->AdoptNewValues();
         }
         // cleanup games list
-        qDeleteAll(m_Games);
-        m_Games.clear();
+        DeleteList(m_Games);
     }
 protected:
 private:
-    QMap<IDTYPE, Player *>  m_Players;                          ///< The players.
-    QList<Game *>           m_Games;                            ///< The games played.
-    double                  m_DefaultVolatility{0};             ///< Default rating volatility when creating a new player.
-    double                  m_Tau{0};                           ///< Tau system constant.
+    std::map<IDTYPE, Player *>  m_Players;                          ///< The players.
+    std::list<Game *>           m_Games;                            ///< The games played.
+    double                      m_DefaultVolatility{0};             ///< Default rating volatility when creating a new player.
+    double                      m_Tau{0};                           ///< Tau system constant.
     /**
      * @brief Create and fill list of game helper structs.
      *
@@ -546,9 +545,9 @@ private:
      * @param[in]   playerRating    Rating for player.
      * @return                      The list of game helper structs
      */
-    QList<GameHelper> CreateGameHelperList(const IDTYPE playerID, double playerRating)
+    std::list<GameHelper> CreateGameHelperList(const IDTYPE playerID, double playerRating)
     {
-        QList<GameHelper> result;
+        std::list<GameHelper> result;
         // search for played games and add according results
         for(auto game : m_Games)
         {
@@ -560,7 +559,7 @@ private:
                 auto it = m_Players.find(game->GetPlayer2ID());
                 if(it != m_Players.end())
                 {
-                    opponent = *it;
+                    opponent = it->second;
                     s = (game->GetResult() == GameResult::Player1) ? 1 : ((game->GetResult() == GameResult::Draw) ? 0.5 : 0);
                 }
             }
@@ -570,7 +569,7 @@ private:
                 auto it = m_Players.find(game->GetPlayer1ID());
                 if(it != m_Players.end())
                 {
-                    opponent = *it;
+                    opponent = it->second;
                     s = (game->GetResult() == GameResult::Player2) ? 1 : ((game->GetResult() == GameResult::Draw) ? 0.5 : 0);
                 }
             }
@@ -578,9 +577,9 @@ private:
             {
                 double mu = opponent->GetRating();
                 double phi = opponent->GetDeviation();
-                double g = 1/sqrt(1+3*phi*phi/PI/PI);
+                double g = 1/sqrt(1+3*phi*phi/M_PI/M_PI);
                 double E = 1/(1+exp(-g*(playerRating-mu)));
-                result.append({mu, phi, g, E, s});
+                result.push_back({mu, phi, g, E, s});
             }
         }
         return result;
@@ -599,6 +598,28 @@ private:
     double f(double x, double delta, double phi, double v, double a)
     {
         return exp(x)*(delta*delta - phi*phi - v - exp(x))/2/(phi*phi + v + exp(x)) - (x - a)/m_Tau/m_Tau;
+    }
+    /**
+     * @todo comment
+     */
+    template <typename T> void DeleteMap(T & t)
+    {
+        for(auto & it : t)
+        {
+            delete it.second;
+        }
+        t.clear();
+    }
+    /**
+     * @todo comment
+     */
+    template <typename T> void DeleteList(T & t)
+    {
+        for(auto & it : t)
+        {
+            delete it;
+        }
+        t.clear();
     }
 };
 
