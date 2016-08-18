@@ -1,6 +1,9 @@
 V 0.2.0
 =======
-* switch to std::map and std::list
+* remove all relations to Qt
+
+V 0.3.0
+=======
 - finish documentation
-- add some unit tests
 - add team playing
+- add some unit tests?
