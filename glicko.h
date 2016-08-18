@@ -68,6 +68,7 @@ constexpr double INITIAL_DEVIATION = 350;                       ///< Initial gli
 #define GL_DISABLE_COPY_AND_MOVE(Class) GL_DISABLE_COPY(Class) GL_DISABLE_MOVE(Class)
 }
 
+
 /**
  * @brief Glicko exception.
  *
@@ -112,6 +113,7 @@ private:
     int         m_Line;     ///< Line in which exception occured.
 };
 
+
 /**
  * @brief Game result
  */
@@ -121,7 +123,6 @@ enum class GameResult
     Draw,       ///< Draw.
     Player2     ///< player 2 has won.
 };
-
 
 
 /**
@@ -134,8 +135,6 @@ template <typename IDTYPE> class Glicko
     GL_DISABLE_COPY_AND_MOVE(Glicko);
 
 private:
-
-
     /**
      * @brief Game class
      */
@@ -189,6 +188,7 @@ private:
         GameResult  m_Result{GameResult::Draw}; ///< Game result.
     };
 
+
     /**
      * @todo comment
      */
@@ -200,6 +200,7 @@ private:
         double  E;      ///< @todo comment
         double  s;      ///< @todo comment
     };
+
 
     /**
      * @brief Class describing one player.
@@ -302,6 +303,7 @@ private:
         double      m_NewDeviation{0};      ///< Player's new rating deviation.
         double      m_NewVolatility{0};     ///< Player's new rating volatility.
     };
+
 
 public:
     /**
