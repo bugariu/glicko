@@ -24,13 +24,10 @@
  *********************************************************************************/
 
 #include "glicko.h"
-#include <QDebug>
+#include <iostream>
 
-int main(int argc, char *argv[])
+int main(int /*argc*/, char */*argv*/[])
 {
-    Q_UNUSED(argc);
-    Q_UNUSED(argv);
-
     glicko::Glicko<int> glicko{0.06, 0.5};
 
     // add some players
@@ -40,10 +37,10 @@ int main(int argc, char *argv[])
     glicko.CreatePlayer(4, 1700, 300, 0.06);
 
 
-    qDebug() << 1 << glicko.GetRating(1) << glicko.GetDeviation(1) << glicko.GetVolatility(1);
-    qDebug() << 2 << glicko.GetRating(2) << glicko.GetDeviation(2) << glicko.GetVolatility(2);
-    qDebug() << 3 << glicko.GetRating(3) << glicko.GetDeviation(3) << glicko.GetVolatility(3);
-    qDebug() << 4 << glicko.GetRating(4) << glicko.GetDeviation(4) << glicko.GetVolatility(4);
+    std::cout << 1 << " " << glicko.GetRating(1) << " " << glicko.GetDeviation(1) << " " << glicko.GetVolatility(1) << std::endl;
+    std::cout << 2 << " " << glicko.GetRating(2) << " " << glicko.GetDeviation(2) << " " << glicko.GetVolatility(2) << std::endl;
+    std::cout << 3 << " " << glicko.GetRating(3) << " " << glicko.GetDeviation(3) << " " << glicko.GetVolatility(3) << std::endl;
+    std::cout << 4 << " " << glicko.GetRating(4) << " " << glicko.GetDeviation(4) << " " << glicko.GetVolatility(4) << std::endl;
 
 
     // add games
@@ -51,9 +48,11 @@ int main(int argc, char *argv[])
     glicko.AddGame(1, 3, glicko::GameResult::Player2);
     glicko.AddGame(1, 4, glicko::GameResult::Player2);
 
+
+    // compute ratings
     glicko.ComputeRatings();
-    qDebug() << 1 << glicko.GetRating(1) << glicko.GetDeviation(1) << glicko.GetVolatility(1);
-    qDebug() << 2 << glicko.GetRating(2) << glicko.GetDeviation(2) << glicko.GetVolatility(2);
-    qDebug() << 3 << glicko.GetRating(3) << glicko.GetDeviation(3) << glicko.GetVolatility(3);
-    qDebug() << 4 << glicko.GetRating(4) << glicko.GetDeviation(4) << glicko.GetVolatility(4);
+    std::cout << 1 << " " << glicko.GetRating(1) << " " << glicko.GetDeviation(1) << " " << glicko.GetVolatility(1) << std::endl;
+    std::cout << 2 << " " << glicko.GetRating(2) << " " << glicko.GetDeviation(2) << " " << glicko.GetVolatility(2) << std::endl;
+    std::cout << 3 << " " << glicko.GetRating(3) << " " << glicko.GetDeviation(3) << " " << glicko.GetVolatility(3) << std::endl;
+    std::cout << 4 << " " << glicko.GetRating(4) << " " << glicko.GetDeviation(4) << " " << glicko.GetVolatility(4) << std::endl;
 }

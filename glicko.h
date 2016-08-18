@@ -26,7 +26,8 @@
 #ifndef GLICKO_GLICKO_H
 #define GLICKO_GLICKO_H
 
-#include <QMap>
+#include <map>
+#include <list>
 #include <cmath>
 
 namespace glicko
@@ -34,7 +35,6 @@ namespace glicko
 
 namespace
 {
-constexpr double PI = 3.141592653589793238462643383279502884;   ///< PI constant.
 constexpr double GLICO_CONSTANT = 173.7178;                     ///< The glicko constant to convert from glicko to glicko2 ratings.
 constexpr double INITIAL_RATING = 1500;                         ///< Initial glicko rating for a new player.
 constexpr double INITIAL_DEVIATION = 350;                       ///< Initial glicko rating deviation for a new player.
@@ -46,26 +46,6 @@ constexpr double INITIAL_DEVIATION = 350;                       ///< Initial gli
  */
 #define GLTHROW(msg) throw glicko::GlickoException{msg, __FILE__, __LINE__};
 
-/**
- * @brief Additional macro to prevent copy of a class.
- *
- * @param[in] Class Class name.
- */
-#define GL_DISABLE_COPY(Class) Class(const Class &) = delete; Class &operator=(const Class &) = delete;
-
-/**
- * @brief Additional macro to prevent move of a class.
- *
- * @param[in] Class Class name.
- */
-#define GL_DISABLE_MOVE(Class) Class(Class &&) = delete; Class &operator=(Class &&) = delete;
-
-/**
- * @brief Additional macro to prevent copy and move of a class.
- *
- * @param[in] Class Class name.
- */
-#define GL_DISABLE_COPY_AND_MOVE(Class) GL_DISABLE_COPY(Class) GL_DISABLE_MOVE(Class)
 }
 
 
@@ -84,8 +64,8 @@ public:
      * @param[in]   fileName    File name where exception occured.
      * @param[in]   line        Line where exception occured.
      */
-    GlickoException(const QString &message, const QString &fileName, int line):
-        std::runtime_error{message.toUtf8().constData()},
+    GlickoException(const std::string &message, const std::string &fileName, int line):
+        std::runtime_error{message},
         m_FileName{fileName},
         m_Line{line}
     {
@@ -95,7 +75,7 @@ public:
      *
      * @return File name.
      */
-    QString GetFileName() const
+    std::string GetFileName() const
     {
         return m_FileName;
     }
@@ -109,7 +89,7 @@ public:
         return m_Line;
     }
 private:
-    QString     m_FileName; ///< File name where exception occured.
+    std::string m_FileName; ///< File name where exception occured.
     int         m_Line;     ///< Line in which exception occured.
 };
 
@@ -132,7 +112,6 @@ enum class GameResult
  */
 template <typename IDTYPE> class Glicko
 {
-    GL_DISABLE_COPY_AND_MOVE(Glicko);
 
 private:
     /**
@@ -318,14 +297,6 @@ public:
     {
     }
     /**
-     * @brief Destructor.
-     */
-    ~Glicko()
-    {
-        qDeleteAll(m_Players);
-        qDeleteAll(m_Games);
-    }
-    /**
      * @brief Create a new player.
      *
      * Player will be created with the default values for rating, deviation and volatility.
@@ -335,12 +306,12 @@ public:
     void CreatePlayer(const IDTYPE &playerID)
     {
         // check if player with this ID already exists
-        if(m_Players.contains(playerID))
+        if(m_Players.find(playerID) != m_Players.end())
         {
             GLTHROW("Player with this ID already exists.");
         }
         // create player
-        m_Players[playerID] = new Player{0, INITIAL_DEVIATION/GLICO_CONSTANT, m_DefaultVolatility};
+        m_Players.insert({playerID, {0, INITIAL_DEVIATION/GLICO_CONSTANT, m_DefaultVolatility}});
     }
     /**
      * @brief Create a new player.
@@ -355,12 +326,12 @@ public:
     void CreatePlayer(const IDTYPE &playerID, double initialRating, double initialDeviation, double initialVolatility)
     {
         // check if player with this ID already exists
-        if(m_Players.contains(playerID))
+        if(m_Players.find(playerID) != m_Players.end())
         {
             GLTHROW("Player with this ID already exists.");
         }
         // create player
-        m_Players[playerID] = new Player{(initialRating-INITIAL_RATING)/GLICO_CONSTANT, initialDeviation/GLICO_CONSTANT, initialVolatility};
+        m_Players.insert({playerID, {(initialRating-INITIAL_RATING)/GLICO_CONSTANT, initialDeviation/GLICO_CONSTANT, initialVolatility}});
     }
     /**
      * @brief Remove a player.
@@ -395,7 +366,7 @@ public:
         {
             GLTHROW("Player with this ID does not exist.");
         }
-        return GLICO_CONSTANT*(*it)->GetRating() + INITIAL_RATING;
+        return GLICO_CONSTANT * it->second.GetRating() + INITIAL_RATING;
     }
     /**
      * @brief Get rating deviation for one player.
@@ -412,7 +383,7 @@ public:
         {
             GLTHROW("Player with this ID does not exist.");
         }
-        return GLICO_CONSTANT*(*it)->GetDeviation();
+        return GLICO_CONSTANT * it->second.GetDeviation();
     }
     /**
      * @brief Get rating volatility for one player.
@@ -429,7 +400,7 @@ public:
         {
             GLTHROW("Player with this ID does not exist.");
         }
-        return (*it)->GetVolatility();
+        return it->second.GetVolatility();
     }
     /**
      * @brief Add a game.
@@ -440,7 +411,7 @@ public:
      */
     void AddGame(const IDTYPE &playerID1, const IDTYPE &playerID2, GameResult result)
     {
-        m_Games.append(new Game{playerID1, playerID2, result});
+        m_Games.push_back({playerID1, playerID2, result});
     }
     /**
      * @brief Compute new player ratings.
@@ -453,9 +424,9 @@ public:
         // iterate through players
         for(auto it = m_Players.begin(); it != m_Players.end(); ++it)
         {
-            IDTYPE playerID = it.key();
-            Player *player = it.value();
-            QList<GameHelper> playedGames = CreateGameHelperList(playerID, player->GetRating());
+            IDTYPE playerID = it->first;
+            Player & player = it->second;
+            std::list<GameHelper> playedGames = CreateGameHelperList(playerID, player.GetRating());
             // compute new ratings for player
             if(!playedGames.empty())
             {
@@ -470,8 +441,8 @@ public:
                 v = 1/v;
                 delta = v*delta;
                 // start iteration
-                double sigma = player->GetVolatility();
-                double phi = player->GetDeviation();
+                double sigma = player.GetVolatility();
+                double phi = player.GetDeviation();
                 double a = log(sigma*sigma);
                 double A = a;
                 double B = 0;
@@ -511,34 +482,33 @@ public:
                 double newSigma = exp(A/2);
                 double phiStarSquare = phi*phi + newSigma*newSigma;
                 double newPhi = 1/sqrt(1/phiStarSquare + 1/v);
-                double newMu = player->GetRating() + newPhi*newPhi*delta/v;
-                player->SetNewRating(newMu);
-                player->SetNewDeviation(newPhi);
-                player->SetNewVolatility(newSigma);
+                double newMu = player.GetRating() + newPhi*newPhi*delta/v;
+                player.SetNewRating(newMu);
+                player.SetNewDeviation(newPhi);
+                player.SetNewVolatility(newSigma);
             }
             else
             {
                 // player has not played any games
-                double phi = player->GetDeviation();
-                double sigma = player->GetVolatility();
-                player->SetNewDeviation(sqrt(phi*phi + sigma*sigma));
+                double phi = player.GetDeviation();
+                double sigma = player.GetVolatility();
+                player.SetNewDeviation(sqrt(phi*phi + sigma*sigma));
             }
         }
         // adopt new ratings for each player
         for(auto & player : m_Players)
         {
-            player->AdoptNewValues();
+            player.second.AdoptNewValues();
         }
         // cleanup games list
-        qDeleteAll(m_Games);
         m_Games.clear();
     }
 protected:
 private:
-    QMap<IDTYPE, Player *>  m_Players;                          ///< The players.
-    QList<Game *>           m_Games;                            ///< The games played.
-    double                  m_DefaultVolatility{0};             ///< Default rating volatility when creating a new player.
-    double                  m_Tau{0};                           ///< Tau system constant.
+    std::map<IDTYPE, Player>    m_Players;                          ///< The players.
+    std::list<Game>             m_Games;                            ///< The games played.
+    double                      m_DefaultVolatility{0};             ///< Default rating volatility when creating a new player.
+    double                      m_Tau{0};                           ///< Tau system constant.
     /**
      * @brief Create and fill list of game helper structs.
      *
@@ -546,41 +516,41 @@ private:
      * @param[in]   playerRating    Rating for player.
      * @return                      The list of game helper structs
      */
-    QList<GameHelper> CreateGameHelperList(const IDTYPE playerID, double playerRating)
+    std::list<GameHelper> CreateGameHelperList(const IDTYPE playerID, double playerRating)
     {
-        QList<GameHelper> result;
+        std::list<GameHelper> result;
         // search for played games and add according results
         for(auto game : m_Games)
         {
-            Player *opponent = nullptr;
+            const Player * opponent{nullptr};
             double s = 0;
-            if(game->GetPlayer1ID() == playerID)
+            if(game.GetPlayer1ID() == playerID)
             {
                 // we are the first player
-                auto it = m_Players.find(game->GetPlayer2ID());
+                auto it = m_Players.find(game.GetPlayer2ID());
                 if(it != m_Players.end())
                 {
-                    opponent = *it;
-                    s = (game->GetResult() == GameResult::Player1) ? 1 : ((game->GetResult() == GameResult::Draw) ? 0.5 : 0);
+                    opponent = &(it->second);
+                    s = (game.GetResult() == GameResult::Player1) ? 1 : ((game.GetResult() == GameResult::Draw) ? 0.5 : 0);
                 }
             }
-            else if(game->GetPlayer2ID() == playerID)
+            else if(game.GetPlayer2ID() == playerID)
             {
                 // we are the second player
-                auto it = m_Players.find(game->GetPlayer1ID());
+                auto it = m_Players.find(game.GetPlayer1ID());
                 if(it != m_Players.end())
                 {
-                    opponent = *it;
-                    s = (game->GetResult() == GameResult::Player2) ? 1 : ((game->GetResult() == GameResult::Draw) ? 0.5 : 0);
+                    opponent = &(it->second);
+                    s = (game.GetResult() == GameResult::Player2) ? 1 : ((game.GetResult() == GameResult::Draw) ? 0.5 : 0);
                 }
             }
             if(opponent != nullptr)
             {
                 double mu = opponent->GetRating();
                 double phi = opponent->GetDeviation();
-                double g = 1/sqrt(1+3*phi*phi/PI/PI);
+                double g = 1/sqrt(1+3*phi*phi/M_PI/M_PI);
                 double E = 1/(1+exp(-g*(playerRating-mu)));
-                result.append({mu, phi, g, E, s});
+                result.push_back({mu, phi, g, E, s});
             }
         }
         return result;
