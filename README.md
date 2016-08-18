@@ -3,7 +3,7 @@ glicko
 
 about
 -----
-glicko is a project for implementing the glicko2 system.
+glicko is a project for implementing the glicko2 system. See http://www.glicko.net/glicko.html for details.
 
 
 development
