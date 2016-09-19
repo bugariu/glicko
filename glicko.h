@@ -449,7 +449,7 @@ public:
                 constexpr double EPSILON = 0.000001;
                 if(delta*delta > phi*phi + v)
                 {
-                    B = delta*delta - phi*phi - v;
+                    B = log(delta*delta - phi*phi - v);
                 }
                 else
                 {
@@ -568,7 +568,7 @@ private:
      */
     double f(double x, double delta, double phi, double v, double a)
     {
-        return exp(x)*(delta*delta - phi*phi - v - exp(x))/2/(phi*phi + v + exp(x)) - (x - a)/m_Tau/m_Tau;
+        return exp(x)*(delta*delta - phi*phi - v - exp(x))/2/(phi*phi + v + exp(x))/(phi*phi + v + exp(x)) - (x - a)/m_Tau/m_Tau;
     }
 };
 
