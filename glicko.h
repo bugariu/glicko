@@ -296,6 +296,10 @@ public:
         m_Tau{tau}
     {
     }
+    std::string GetVersion() const
+    {
+        return "0.3.0";
+    }
     /**
      * @brief Create a new player.
      *
