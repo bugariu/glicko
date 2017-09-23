@@ -33,11 +33,12 @@
 namespace glicko
 {
 
-namespace
+namespace config
 {
 constexpr double GLICO_CONSTANT = 173.7178;                     ///< The glicko constant to convert from glicko to glicko2 ratings.
 constexpr double INITIAL_RATING = 1500;                         ///< Initial glicko rating for a new player.
 constexpr double INITIAL_DEVIATION = 350;                       ///< Initial glicko rating deviation for a new player.
+}
 
 /**
  * @brief Additional macro to throw an exception of type glicko::GlickoException.
@@ -45,9 +46,6 @@ constexpr double INITIAL_DEVIATION = 350;                       ///< Initial gli
  * @param[in] msg   The message.
  */
 #define GLTHROW(msg) throw glicko::GlickoException{msg, __FILE__, __LINE__};
-
-}
-
 
 /**
  * @brief Glicko exception.
@@ -315,7 +313,7 @@ public:
             GLTHROW("Player with this ID already exists.");
         }
         // create player
-        m_Players.insert({playerID, {0, INITIAL_DEVIATION/GLICO_CONSTANT, m_DefaultVolatility}});
+        m_Players.insert({playerID, {0, config::INITIAL_DEVIATION/config::GLICO_CONSTANT, m_DefaultVolatility}});
     }
     /**
      * @brief Create a new player.
@@ -335,7 +333,8 @@ public:
             GLTHROW("Player with this ID already exists.");
         }
         // create player
-        m_Players.insert({playerID, {(initialRating-INITIAL_RATING)/GLICO_CONSTANT, initialDeviation/GLICO_CONSTANT, initialVolatility}});
+        m_Players.insert({playerID, {(initialRating-config::INITIAL_RATING)/config::GLICO_CONSTANT,
+                                     initialDeviation/config::GLICO_CONSTANT, initialVolatility}});
     }
     /**
      * @brief Remove a player.
@@ -370,7 +369,7 @@ public:
         {
             GLTHROW("Player with this ID does not exist.");
         }
-        return GLICO_CONSTANT * it->second.GetRating() + INITIAL_RATING;
+        return config::GLICO_CONSTANT * it->second.GetRating() + config::INITIAL_RATING;
     }
     /**
      * @brief Get rating deviation for one player.
@@ -387,7 +386,7 @@ public:
         {
             GLTHROW("Player with this ID does not exist.");
         }
-        return GLICO_CONSTANT * it->second.GetDeviation();
+        return config::GLICO_CONSTANT * it->second.GetDeviation();
     }
     /**
      * @brief Get rating volatility for one player.
@@ -524,7 +523,7 @@ private:
     {
         std::list<GameHelper> result;
         // search for played games and add according results
-        for(auto game : m_Games)
+        for(auto & game : m_Games)
         {
             const Player * opponent{nullptr};
             double s = 0;
@@ -548,7 +547,7 @@ private:
                     s = (game.GetResult() == GameResult::Player2) ? 1 : ((game.GetResult() == GameResult::Draw) ? 0.5 : 0);
                 }
             }
-            if(opponent != nullptr)
+            if(opponent)
             {
                 double mu = opponent->GetRating();
                 double phi = opponent->GetDeviation();
