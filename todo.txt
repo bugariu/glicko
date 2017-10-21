@@ -1,5 +1,3 @@
-V 0.3.0
-=======
 - finish documentation
 - add team playing
 - add some unit tests?

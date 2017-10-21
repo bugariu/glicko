@@ -359,7 +359,7 @@ public:
      *
      * @throws glicko::GlickoException when player with this ID does not exist.
      * @param[in]   playerID    ID of the player.
-     * @retun                   Player rating.
+     * @return                  Player rating.
      */
     double GetRating(const IDTYPE &playerID)
     {
@@ -376,7 +376,7 @@ public:
      *
      * @throws glicko::GlickoException when player with this ID does not exist.
      * @param[in]   playerID    ID of the player.
-     * @retun                   Player rating deviation.
+     * @return                  Player rating deviation.
      */
     double GetDeviation(const IDTYPE &playerID)
     {
@@ -393,7 +393,7 @@ public:
      *
      * @throws glicko::GlickoException when player with this ID does not exist.
      * @param[in]   playerID    ID of the player.
-     * @retun                   Player rating volatility.
+     * @return                  Player rating volatility.
      */
     double GetVolatility(const IDTYPE &playerID)
     {
