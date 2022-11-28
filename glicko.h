@@ -29,6 +29,7 @@
 #include <map>
 #include <list>
 #include <cmath>
+#include <stdexcept>
 
 namespace glicko
 {
