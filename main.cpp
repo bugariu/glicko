@@ -31,10 +31,14 @@ int main(int /*argc*/, char */*argv*/[])
     glicko::Glicko<int> glicko{0.06, 0.5};
 
     // add some players
-    glicko.CreatePlayer(1, 1500, 200, 0.06);
-    glicko.CreatePlayer(2, 1400, 30, 0.06);
-    glicko.CreatePlayer(3, 1550, 100, 0.06);
-    glicko.CreatePlayer(4, 1700, 300, 0.06);
+//    glicko.CreatePlayer(1, 1500, 200, 0.06);
+//    glicko.CreatePlayer(2, 1400, 30, 0.06);
+//    glicko.CreatePlayer(3, 1550, 100, 0.06);
+//    glicko.CreatePlayer(4, 1700, 300, 0.06);
+    glicko.CreatePlayer(1);
+    glicko.CreatePlayer(2);
+    glicko.CreatePlayer(3);
+    glicko.CreatePlayer(4);
 
 
     std::cout << 1 << " " << glicko.GetRating(1) << " " << glicko.GetDeviation(1) << " " << glicko.GetVolatility(1) << std::endl;
@@ -45,12 +49,21 @@ int main(int /*argc*/, char */*argv*/[])
 
     // add games
     glicko.AddGame(1, 2, glicko::GameResult::Player1);
-    glicko.AddGame(1, 3, glicko::GameResult::Player2);
-    glicko.AddGame(1, 4, glicko::GameResult::Player2);
-
+    glicko.AddGame(3, 4, glicko::GameResult::Player2);
 
     // compute ratings
     glicko.ComputeRatings();
+
+    // new round
+    glicko.AddGame(1, 3, glicko::GameResult::Player1);
+    glicko.AddGame(2, 4, glicko::GameResult::Player2);
+    glicko.ComputeRatings();
+
+    // new round
+    glicko.AddGame(1, 4, glicko::GameResult::Player1);
+    glicko.AddGame(2, 3, glicko::GameResult::Player2);
+    glicko.ComputeRatings();
+
     std::cout << 1 << " " << glicko.GetRating(1) << " " << glicko.GetDeviation(1) << " " << glicko.GetVolatility(1) << std::endl;
     std::cout << 2 << " " << glicko.GetRating(2) << " " << glicko.GetDeviation(2) << " " << glicko.GetVolatility(2) << std::endl;
     std::cout << 3 << " " << glicko.GetRating(3) << " " << glicko.GetDeviation(3) << " " << glicko.GetVolatility(3) << std::endl;
