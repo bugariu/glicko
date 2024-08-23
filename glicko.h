@@ -297,7 +297,7 @@ public:
     }
     static std::string GetVersion()
     {
-        return "0.3.1";
+        return GLICKO_VERSION;
     }
     /**
      * @brief Create a new player.
